@@ -59,6 +59,7 @@ void ACruxCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACruxCharacter::Jump);
 	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &ACruxCharacter::BeginCrouch);
 	PlayerInputComponent->BindAction("Crouch", IE_Released, this, &ACruxCharacter::EndCrouch);
+	PlayerInputComponent->BindAction("AutoAttack", IE_Pressed, this, &ACruxCharacter::AutoAttack);
 }
 
 void ACruxCharacter::MoveForward(float val)

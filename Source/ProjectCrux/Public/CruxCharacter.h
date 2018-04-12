@@ -28,6 +28,8 @@ protected:
 	void BeginCrouch();
 	void EndCrouch();
 
+	UFUNCTION(BlueprintImplementableEvent, Category = "Character")
+	void AutoAttack();
 	UFUNCTION()
 	void OnHealthChanged(UCruxHealthComponent* Comp, float Health, float HealthDelta, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCause);
 
