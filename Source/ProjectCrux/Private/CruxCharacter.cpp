@@ -29,6 +29,7 @@ ACruxCharacter::ACruxCharacter()
 	GetMovementComponent()->GetNavAgentPropertiesRef().bCanCrouch = true;
 
 	IsDead = false;
+	IsAttacking = false;
 }
 
 // Called when the game starts or when spawned
@@ -112,4 +113,5 @@ void ACruxCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(ACruxCharacter, IsDead);
+	DOREPLIFETIME(ACruxCharacter, IsAttacking);
 }

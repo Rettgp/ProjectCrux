@@ -39,8 +39,10 @@ protected:
 	USpringArmComponent* SpringArmComp;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UCruxHealthComponent* HealthComp;
-	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Player")
+	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Character")
 	bool IsDead;
+	UPROPERTY(Replicated, BlueprintReadWrite, Category = "Character")
+	bool IsAttacking;
 
 public:	
 	// Called every frame
