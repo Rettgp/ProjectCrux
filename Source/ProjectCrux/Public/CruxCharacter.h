@@ -36,6 +36,8 @@ protected:
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Character")
 	void AutoAttack();
+	UFUNCTION(BlueprintImplementableEvent, Category = "Character")
+	void Targeted(ACruxCharacter* target);
 	UFUNCTION()
 	void OnHealthChanged(UCruxHealthComponent* Comp, float Health, float HealthDelta, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCause);
 
@@ -49,6 +51,8 @@ protected:
 	bool IsDead;
 	UPROPERTY(Replicated, BlueprintReadWrite, Category = "Character")
 	bool IsAttacking;
+	UPROPERTY(BlueprintReadWrite, Category = "Character")
+	ACruxCharacter* Target;
 
 	bool IsRotating;
 	float MouseX;

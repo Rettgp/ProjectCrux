@@ -114,11 +114,8 @@ void ACruxCharacter::RightMouseReleased()
 		FHitResult hit_result;
 		controller->GetHitResultUnderCursor(COLLISION_WEAPON, true, hit_result);	
 		ACruxCharacter* hit_actor = Cast<ACruxCharacter>(hit_result.GetActor());
-		if (hit_actor)
-		{
-			UE_LOG(LogTemp, Log, TEXT("Actor: %s"), *hit_actor->GetName());
-			DrawDebugSphere(GetWorld(), hit_actor->GetActorLocation(), 64, 12, FColor(255, 0, 0), true, 1.0f);
-		}
+		Target = hit_actor;
+		Targeted(hit_actor);
 	}
 
 	bUseControllerRotationYaw = false;

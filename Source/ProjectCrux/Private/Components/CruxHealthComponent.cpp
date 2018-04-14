@@ -97,7 +97,7 @@ bool UCruxHealthComponent::IsFriendly(AActor* actor_a, AActor* actor_b)
 
 	if (!health_comp_a || !health_comp_b)
 	{
-		return true;
+		return false;
 	}
 
 	if (health_comp_a->TeamId == 255 || health_comp_b->TeamId == 255)
