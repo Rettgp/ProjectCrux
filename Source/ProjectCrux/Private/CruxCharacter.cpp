@@ -8,6 +8,9 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/PawnMovementComponent.h"
 #include "Net/UnrealNetwork.h"
+#include "CruxPlayerController.h"
+#include "ProjectCrux.h"
+#include "DrawDebugHelpers.h"
 
 
 // Sets default values
@@ -30,13 +33,14 @@ ACruxCharacter::ACruxCharacter()
 
 	IsDead = false;
 	IsAttacking = false;
+	IsRotating = false;
 }
 
 // Called when the game starts or when spawned
 void ACruxCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 	HealthComp->OnHealthChanged.AddDynamic(this, &ACruxCharacter::OnHealthChanged);
 }
 
@@ -45,6 +49,14 @@ void ACruxCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (IsRotating)
+	{
+		ACruxPlayerController* controller = Cast<ACruxPlayerController>(GetController());
+		if (controller)
+		{
+			controller->SetMouseLocation(MouseX, MouseY);
+		}
+	}
 }
 
 // Called to bind functionality to input
@@ -61,6 +73,10 @@ void ACruxCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &ACruxCharacter::BeginCrouch);
 	PlayerInputComponent->BindAction("Crouch", IE_Released, this, &ACruxCharacter::EndCrouch);
 	PlayerInputComponent->BindAction("AutoAttack", IE_Pressed, this, &ACruxCharacter::AutoAttack);
+	PlayerInputComponent->BindAction("RightMouse", IE_Pressed, this, &ACruxCharacter::RightMousePressed);
+	PlayerInputComponent->BindAction("RightMouse", IE_Released, this, &ACruxCharacter::RightMouseReleased);
+	PlayerInputComponent->BindAction("LeftMouse", IE_Pressed, this, &ACruxCharacter::LeftMousePressed);
+	PlayerInputComponent->BindAction("LeftMouse", IE_Released, this, &ACruxCharacter::LeftMouseReleased);
 }
 
 void ACruxCharacter::MoveForward(float val)
@@ -81,6 +97,75 @@ void ACruxCharacter::BeginCrouch()
 void ACruxCharacter::EndCrouch()
 {
 	UnCrouch();
+}
+
+void ACruxCharacter::RightMousePressed()
+{
+	bUseControllerRotationYaw = true;
+	BeginRotation();
+}
+
+void ACruxCharacter::RightMouseReleased()
+{
+	
+	ACruxPlayerController* controller = Cast<ACruxPlayerController>(GetController());
+	if (controller)
+	{
+		FHitResult hit_result;
+		controller->GetHitResultUnderCursor(COLLISION_WEAPON, true, hit_result);	
+		ACruxCharacter* hit_actor = Cast<ACruxCharacter>(hit_result.GetActor());
+		if (hit_actor)
+		{
+			UE_LOG(LogTemp, Log, TEXT("Actor: %s"), *hit_actor->GetName());
+			DrawDebugSphere(GetWorld(), hit_actor->GetActorLocation(), 64, 12, FColor(255, 0, 0), true, 1.0f);
+		}
+	}
+
+	bUseControllerRotationYaw = false;
+	EndRotation();
+}
+
+void ACruxCharacter::LeftMousePressed()
+{
+	BeginRotation();
+}
+
+void ACruxCharacter::LeftMouseReleased()
+{
+	EndRotation();
+}
+
+void ACruxCharacter::BeginRotation()
+{
+	if (IsRotating)
+	{
+		return;
+	}
+
+	IsRotating = true;
+
+	ACruxPlayerController* controller = Cast<ACruxPlayerController>(GetController());
+	if (controller)
+	{
+		controller->GetMousePosition(MouseX, MouseY);
+		controller->SetIgnoreLookInput(false);
+		controller->bShowMouseCursor = false;
+	}
+}
+
+void ACruxCharacter::EndRotation()
+{
+	ACruxPlayerController* controller = Cast<ACruxPlayerController>(GetController());
+	if (controller && IsRotating &&
+		!controller->IsInputKeyDown(EKeys::RightMouseButton) && 
+		!controller->IsInputKeyDown(EKeys::LeftMouseButton))
+	{
+		controller->SetMouseLocation(MouseX, MouseY);
+		controller->SetIgnoreLookInput(true);
+		controller->bShowMouseCursor = true;
+
+		IsRotating = false;
+	}
 }
 
 void ACruxCharacter::OnHealthChanged(UCruxHealthComponent* Comp, float Health, 

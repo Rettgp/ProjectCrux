@@ -27,6 +27,12 @@ protected:
 	void MoveRight(float val);
 	void BeginCrouch();
 	void EndCrouch();
+	void RightMousePressed();
+	void RightMouseReleased();
+	void LeftMousePressed();
+	void LeftMouseReleased();
+	void BeginRotation();
+	void EndRotation();
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Character")
 	void AutoAttack();
@@ -43,6 +49,10 @@ protected:
 	bool IsDead;
 	UPROPERTY(Replicated, BlueprintReadWrite, Category = "Character")
 	bool IsAttacking;
+
+	bool IsRotating;
+	float MouseX;
+	float MouseY;
 
 public:	
 	// Called every frame
