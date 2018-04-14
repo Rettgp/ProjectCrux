@@ -51,8 +51,11 @@ protected:
 	bool IsDead;
 	UPROPERTY(Replicated, BlueprintReadWrite, Category = "Character")
 	bool IsAttacking;
+	UPROPERTY(Replicated, BlueprintReadWrite, Category = "Character")
+	FString ActorName;
 	UPROPERTY(BlueprintReadWrite, Category = "Character")
 	ACruxCharacter* Target;
+
 
 	bool IsRotating;
 	float MouseX;

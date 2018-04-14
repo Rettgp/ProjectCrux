@@ -34,6 +34,7 @@ ACruxCharacter::ACruxCharacter()
 	IsDead = false;
 	IsAttacking = false;
 	IsRotating = false;
+	ActorName = "Player";
 }
 
 // Called when the game starts or when spawned
@@ -112,7 +113,7 @@ void ACruxCharacter::RightMouseReleased()
 	if (controller)
 	{
 		FHitResult hit_result;
-		controller->GetHitResultUnderCursor(COLLISION_WEAPON, true, hit_result);	
+		controller->GetHitResultUnderCursor(COLLISION_CLICKABLE, true, hit_result);	
 		ACruxCharacter* hit_actor = Cast<ACruxCharacter>(hit_result.GetActor());
 		Target = hit_actor;
 		Targeted(hit_actor);
@@ -196,4 +197,5 @@ void ACruxCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 
 	DOREPLIFETIME(ACruxCharacter, IsDead);
 	DOREPLIFETIME(ACruxCharacter, IsAttacking);
+	DOREPLIFETIME(ACruxCharacter, ActorName);
 }
