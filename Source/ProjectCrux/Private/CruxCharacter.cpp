@@ -8,8 +8,10 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/PawnMovementComponent.h"
 #include "Net/UnrealNetwork.h"
+#include "Kismet/GameplayStatics.h"
 #include "CruxPlayerController.h"
 #include "ProjectCrux.h"
+#include "CruxWeapon.h"
 #include "DrawDebugHelpers.h"
 
 
@@ -32,9 +34,9 @@ ACruxCharacter::ACruxCharacter()
 	GetMovementComponent()->GetNavAgentPropertiesRef().bCanCrouch = true;
 
 	IsDead = false;
-	IsAttacking = false;
-	IsRotating = false;
+	AutoAttackStarted = false;
 	ActorName = "Player";
+	CurrentWeapon = nullptr;
 }
 
 // Called when the game starts or when spawned
@@ -50,14 +52,41 @@ void ACruxCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (IsRotating)
+
+	FVector eye_location;
+	FRotator eye_rotation;
+	GetActorEyesViewPoint(eye_location, eye_rotation);
+
+	FVector look_dir = eye_rotation.Vector();
+
+	FCollisionQueryParams query_params;
+	query_params.AddIgnoredActor(this);
+	query_params.bReturnPhysicalMaterial = false;
+	query_params.bTraceComplex = true;
+
+	FVector trace_end = eye_location + (look_dir * 10000);
+	FVector tracer_end_point = trace_end;
+
+	EPhysicalSurface surface_type = SurfaceType_Default;
+	FHitResult hit_result;
+	bool blocking_hit = GetWorld()->LineTraceSingleByChannel(
+		hit_result, eye_location, trace_end, COLLISION_CLICKABLE, query_params);
+
+	if (blocking_hit)
 	{
-		ACruxPlayerController* controller = Cast<ACruxPlayerController>(GetController());
-		if (controller)
-		{
-			controller->SetMouseLocation(MouseX, MouseY);
-		}
+		Targeted(hit_result.GetActor());
 	}
+
+	//ACruxPlayerController* controller = Cast<ACruxPlayerController>(GetController());
+	//if (controller)
+	//{
+	//	FHitResult hit_result;
+	//	controller->GetHitResultUnderCursor(COLLISION_CLICKABLE, true, hit_result);	
+	//	ACruxCharacter* hit_actor = Cast<ACruxCharacter>(hit_result.GetActor());
+	//	Target = hit_actor;
+	//	ServerTarget(hit_actor);
+	//	Targeted(hit_actor);
+	//}
 }
 
 // Called to bind functionality to input
@@ -73,11 +102,36 @@ void ACruxCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACruxCharacter::Jump);
 	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &ACruxCharacter::BeginCrouch);
 	PlayerInputComponent->BindAction("Crouch", IE_Released, this, &ACruxCharacter::EndCrouch);
-	PlayerInputComponent->BindAction("AutoAttack", IE_Pressed, this, &ACruxCharacter::AutoAttack);
-	PlayerInputComponent->BindAction("RightMouse", IE_Pressed, this, &ACruxCharacter::RightMousePressed);
-	PlayerInputComponent->BindAction("RightMouse", IE_Released, this, &ACruxCharacter::RightMouseReleased);
-	PlayerInputComponent->BindAction("LeftMouse", IE_Pressed, this, &ACruxCharacter::LeftMousePressed);
-	PlayerInputComponent->BindAction("LeftMouse", IE_Released, this, &ACruxCharacter::LeftMouseReleased);
+	PlayerInputComponent->BindAction("AutoAttack", IE_Pressed, this, &ACruxCharacter::BeginAutoAttack);
+}
+
+
+// ONLY RAN ON SERVER
+void ACruxCharacter::AutoAttackHit(FAutoAttackInfo AttackInfo)
+{
+	if (Role < ROLE_Authority)
+	{
+		return;
+	}
+
+	AutoAttackStarted = false;
+
+	AutoAttackNotify(AttackInfo);
+}
+
+float ACruxCharacter::AutoAttackRange()
+{
+	return 250.0f;
+}
+
+void ACruxCharacter::ServerAutoAttackHit_Implementation(FAutoAttackInfo AttackInfo)
+{
+	AutoAttackHit(AttackInfo);
+}
+
+bool ACruxCharacter::ServerAutoAttackHit_Validate(FAutoAttackInfo AttackInfo)
+{
+	return true;
 }
 
 void ACruxCharacter::MoveForward(float val)
@@ -100,70 +154,35 @@ void ACruxCharacter::EndCrouch()
 	UnCrouch();
 }
 
-void ACruxCharacter::RightMousePressed()
+void ACruxCharacter::ServerTarget_Implementation(ACruxCharacter* target)
 {
-	bUseControllerRotationYaw = true;
-	BeginRotation();
+	Target = target;
 }
 
-void ACruxCharacter::RightMouseReleased()
+bool ACruxCharacter::ServerTarget_Validate(ACruxCharacter* target)
 {
-	
-	ACruxPlayerController* controller = Cast<ACruxPlayerController>(GetController());
-	if (controller)
+	(void)target;
+	return true;
+}
+
+void ACruxCharacter::BeginAutoAttack()
+{
+	if (Role < ROLE_Authority)
 	{
-		FHitResult hit_result;
-		controller->GetHitResultUnderCursor(COLLISION_CLICKABLE, true, hit_result);	
-		ACruxCharacter* hit_actor = Cast<ACruxCharacter>(hit_result.GetActor());
-		Target = hit_actor;
-		Targeted(hit_actor);
+		ServerBeginAutoAttack();
 	}
 
-	bUseControllerRotationYaw = false;
-	EndRotation();
+	AutoAttackStarted = true;
 }
 
-void ACruxCharacter::LeftMousePressed()
+void ACruxCharacter::ServerBeginAutoAttack_Implementation()
 {
-	BeginRotation();
+	BeginAutoAttack();
 }
 
-void ACruxCharacter::LeftMouseReleased()
+bool ACruxCharacter::ServerBeginAutoAttack_Validate()
 {
-	EndRotation();
-}
-
-void ACruxCharacter::BeginRotation()
-{
-	if (IsRotating)
-	{
-		return;
-	}
-
-	IsRotating = true;
-
-	ACruxPlayerController* controller = Cast<ACruxPlayerController>(GetController());
-	if (controller)
-	{
-		controller->GetMousePosition(MouseX, MouseY);
-		controller->SetIgnoreLookInput(false);
-		controller->bShowMouseCursor = false;
-	}
-}
-
-void ACruxCharacter::EndRotation()
-{
-	ACruxPlayerController* controller = Cast<ACruxPlayerController>(GetController());
-	if (controller && IsRotating &&
-		!controller->IsInputKeyDown(EKeys::RightMouseButton) && 
-		!controller->IsInputKeyDown(EKeys::LeftMouseButton))
-	{
-		controller->SetMouseLocation(MouseX, MouseY);
-		controller->SetIgnoreLookInput(true);
-		controller->bShowMouseCursor = true;
-
-		IsRotating = false;
-	}
+	return true;
 }
 
 void ACruxCharacter::OnHealthChanged(UCruxHealthComponent* Comp, float Health, 
@@ -196,6 +215,7 @@ void ACruxCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(ACruxCharacter, IsDead);
-	DOREPLIFETIME(ACruxCharacter, IsAttacking);
+	DOREPLIFETIME(ACruxCharacter, AutoAttackStarted);
 	DOREPLIFETIME(ACruxCharacter, ActorName);
+	DOREPLIFETIME(ACruxCharacter, Target);
 }

@@ -9,6 +9,23 @@
 class UCameraComponent;
 class USpringArmComponent;
 class UCruxHealthComponent;
+class ACruxWeapon;
+
+UENUM(BlueprintType)
+enum class EAttackSide : uint8
+{
+	LEFT,
+	RIGHT
+};
+
+USTRUCT(BlueprintType)
+struct FAutoAttackInfo
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadWrite, Category="Auto Attack Info")
+	EAttackSide AutoAttackSide;
+};
 
 UCLASS()
 class PROJECTCRUX_API ACruxCharacter : public ACharacter
@@ -19,6 +36,13 @@ public:
 	// Sets default values for this character's properties
 	ACruxCharacter();
 
+	UFUNCTION(BlueprintCallable, Category = "Character")
+	void AutoAttackHit(FAutoAttackInfo AttackInfo);
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerAutoAttackHit(FAutoAttackInfo AttackInfo);
+
+	virtual float AutoAttackRange();
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -27,17 +51,19 @@ protected:
 	void MoveRight(float val);
 	void BeginCrouch();
 	void EndCrouch();
-	void RightMousePressed();
-	void RightMouseReleased();
-	void LeftMousePressed();
-	void LeftMouseReleased();
-	void BeginRotation();
-	void EndRotation();
+	void BeginAutoAttack();
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerTarget(ACruxCharacter* target);
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerBeginAutoAttack();
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Character")
 	void AutoAttack();
 	UFUNCTION(BlueprintImplementableEvent, Category = "Character")
-	void Targeted(ACruxCharacter* target);
+	void Targeted(AActor* target);
+	UFUNCTION(BlueprintImplementableEvent, Category = "Character")
+	void AutoAttackNotify(FAutoAttackInfo AttackInfo);
 	UFUNCTION()
 	void OnHealthChanged(UCruxHealthComponent* Comp, float Health, float HealthDelta, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCause);
 
@@ -50,16 +76,13 @@ protected:
 	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Character")
 	bool IsDead;
 	UPROPERTY(Replicated, BlueprintReadWrite, Category = "Character")
-	bool IsAttacking;
+	bool AutoAttackStarted;
 	UPROPERTY(Replicated, BlueprintReadWrite, Category = "Character")
 	FString ActorName;
-	UPROPERTY(BlueprintReadWrite, Category = "Character")
-	ACruxCharacter* Target;
-
-
-	bool IsRotating;
-	float MouseX;
-	float MouseY;
+	UPROPERTY(Replicated, BlueprintReadWrite, Category = "Character")
+	AActor* Target;
+	UPROPERTY(Replicated, BlueprintReadWrite, Category = "Character")
+	ACruxWeapon* CurrentWeapon;
 
 public:	
 	// Called every frame
