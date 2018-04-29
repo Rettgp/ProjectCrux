@@ -4,4 +4,5 @@
 
 #include "CoreMinimal.h"
 
-#define COLLISION_CLICKABLE			ECC_GameTraceChannel1
+#define COLLISION_HIGHLIGHT			ECC_GameTraceChannel1
+#define COLLISION_ATTACKS			ECC_GameTraceChannel2

@@ -8,6 +8,7 @@
 
 class UCameraComponent;
 class USpringArmComponent;
+class USphereComponent;
 class UCruxHealthComponent;
 class ACruxWeapon;
 
@@ -40,6 +41,8 @@ public:
 	void AutoAttackHit(FAutoAttackInfo AttackInfo);
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerAutoAttackHit(FAutoAttackInfo AttackInfo);
+	UFUNCTION(BlueprintCallable, Category = "Character")
+	void BeginAutoAttack();
 
 	virtual float AutoAttackRange();
 
@@ -51,7 +54,6 @@ protected:
 	void MoveRight(float val);
 	void BeginCrouch();
 	void EndCrouch();
-	void BeginAutoAttack();
 
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerTarget(ACruxCharacter* target);

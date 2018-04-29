@@ -22,6 +22,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	FVector PrimarySocketLocation() const;
+	float GetReach() const;
 
 protected:
 	// Called when the game starts or when spawned
@@ -37,4 +38,6 @@ protected:
 	float CriticalMultiplier;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
 	FName PrimarySocketName;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	float Reach;
 };

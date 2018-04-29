@@ -2,7 +2,6 @@
 
 #include "CruxWeapon.h"
 
-
 // Sets default values
 ACruxWeapon::ACruxWeapon()
 {
@@ -11,11 +10,13 @@ ACruxWeapon::ACruxWeapon()
 
 	SkeletalMeshComp = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SkeletalMeshComp"));
 	SkeletalMeshComp->SetupAttachment(RootComponent);
+	SkeletalMeshComp->SetIsReplicated(true);
 
 	BaseDamage = 25.0f;
 	CriticalRate = 0.01f;
 	CriticalMultiplier = 1.5f;
 	PrimarySocketName = "Socket";
+	Reach = 250.0f;
 }
 
 // Called when the game starts or when spawned
@@ -35,5 +36,10 @@ void ACruxWeapon::Tick(float DeltaTime)
 FVector ACruxWeapon::PrimarySocketLocation() const
 {
 	return SkeletalMeshComp->GetSocketLocation(PrimarySocketName);
+}
+
+float ACruxWeapon::GetReach() const
+{
+	return Reach;
 }
 

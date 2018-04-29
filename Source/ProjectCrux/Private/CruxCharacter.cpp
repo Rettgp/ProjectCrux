@@ -4,6 +4,7 @@
 
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/SphereComponent.h"
 #include "Components/CruxHealthComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/PawnMovementComponent.h"
@@ -52,7 +53,6 @@ void ACruxCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-
 	FVector eye_location;
 	FRotator eye_rotation;
 	GetActorEyesViewPoint(eye_location, eye_rotation);
@@ -70,7 +70,7 @@ void ACruxCharacter::Tick(float DeltaTime)
 	EPhysicalSurface surface_type = SurfaceType_Default;
 	FHitResult hit_result;
 	bool blocking_hit = GetWorld()->LineTraceSingleByChannel(
-		hit_result, eye_location, trace_end, COLLISION_CLICKABLE, query_params);
+		hit_result, eye_location, trace_end, COLLISION_HIGHLIGHT, query_params);
 
 	if (blocking_hit)
 	{
