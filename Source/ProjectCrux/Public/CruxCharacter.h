@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "CruxInventory.h"
 #include "CruxCharacter.generated.h"
 
 class UCameraComponent;
@@ -66,6 +67,8 @@ protected:
 	void Targeted(AActor* target);
 	UFUNCTION(BlueprintImplementableEvent, Category = "Character")
 	void AutoAttackNotify(FAutoAttackInfo AttackInfo);
+	UFUNCTION(BlueprintImplementableEvent, Category = "Character")
+	void Die();
 	UFUNCTION()
 	void OnHealthChanged(UCruxHealthComponent* Comp, float Health, float HealthDelta, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCause);
 
@@ -85,6 +88,9 @@ protected:
 	AActor* Target;
 	UPROPERTY(Replicated, BlueprintReadWrite, Category = "Character")
 	ACruxWeapon* CurrentWeapon;
+	UPROPERTY(Replicated, BlueprintReadWrite, Category = "Character")
+	UCruxInventory* Inventory;
+
 
 public:	
 	// Called every frame

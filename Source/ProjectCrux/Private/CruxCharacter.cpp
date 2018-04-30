@@ -46,6 +46,7 @@ void ACruxCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	HealthComp->OnHealthChanged.AddDynamic(this, &ACruxCharacter::OnHealthChanged);
+	Inventory = NewObject<UCruxInventory>(this);
 }
 
 // Called every frame
@@ -76,17 +77,6 @@ void ACruxCharacter::Tick(float DeltaTime)
 	{
 		Targeted(hit_result.GetActor());
 	}
-
-	//ACruxPlayerController* controller = Cast<ACruxPlayerController>(GetController());
-	//if (controller)
-	//{
-	//	FHitResult hit_result;
-	//	controller->GetHitResultUnderCursor(COLLISION_CLICKABLE, true, hit_result);	
-	//	ACruxCharacter* hit_actor = Cast<ACruxCharacter>(hit_result.GetActor());
-	//	Target = hit_actor;
-	//	ServerTarget(hit_actor);
-	//	Targeted(hit_actor);
-	//}
 }
 
 // Called to bind functionality to input
@@ -193,6 +183,8 @@ void ACruxCharacter::OnHealthChanged(UCruxHealthComponent* Comp, float Health,
 	{
 		IsDead = true;
 
+		Die();
+
 		GetMovementComponent()->StopMovementImmediately();
 		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		DetachFromControllerPendingDestroy();
@@ -218,4 +210,5 @@ void ACruxCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 	DOREPLIFETIME(ACruxCharacter, AutoAttackStarted);
 	DOREPLIFETIME(ACruxCharacter, ActorName);
 	DOREPLIFETIME(ACruxCharacter, Target);
+	DOREPLIFETIME(ACruxCharacter, Inventory);
 }
