@@ -22,6 +22,6 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	
-	UPROPERTY(BlueprintReadWrite, Category = "LootItem", meta = (ExposeOnSpawn = "true"))
+	UPROPERTY(Replicated, BlueprintReadWrite, Category = "LootItem", meta = (ExposeOnSpawn = "true"))
 	int Item;
 };

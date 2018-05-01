@@ -2,6 +2,7 @@
 
 #include "CruxLootItem.h"
 
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 ACruxLootItem::ACruxLootItem()
@@ -25,3 +26,9 @@ void ACruxLootItem::Tick(float DeltaTime)
 
 }
 
+void ACruxLootItem::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ACruxLootItem, Item);
+}
