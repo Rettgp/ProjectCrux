@@ -36,7 +36,7 @@ class PROJECTCRUX_API ACruxCharacter : public ACharacter
 
 public:
 	// Sets default values for this character's properties
-	ACruxCharacter();
+	ACruxCharacter(const FObjectInitializer& ObjectInitializer);
 
 	UFUNCTION(BlueprintCallable, Category = "Character")
 	void AutoAttackHit(FAutoAttackInfo AttackInfo);

@@ -9,9 +9,17 @@
 /**
  * 
  */
-UCLASS()
+UCLASS( Blueprintable, ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PROJECTCRUX_API UCruxAbilityMovementAction : public UCruxAbilityAction
 {
 	GENERATED_BODY()
+
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AbilityMovementAction")
+	float Distance;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AbilityMovementAction")
+	float Velocity;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AbilityMovementAction", meta=(ClampMin="0.0", ClampMax="1.0"))
+	FVector Direction;
 	
 };

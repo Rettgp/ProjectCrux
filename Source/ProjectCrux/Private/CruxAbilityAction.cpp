@@ -3,10 +3,19 @@
 
 #include "CruxAbilityAction.h"
 
-CruxAbilityAction::CruxAbilityAction()
+UCruxAbilityAction::UCruxAbilityAction()
+{
+	AffectEnemy = true;
+	AffectFriendly = false;
+	ActionTime = 1.0;
+	Completed = false;
+}
+
+UCruxAbilityAction::~UCruxAbilityAction()
 {
 }
 
-CruxAbilityAction::~CruxAbilityAction()
+bool UCruxAbilityAction::IsComplete()
 {
+	return Completed;
 }

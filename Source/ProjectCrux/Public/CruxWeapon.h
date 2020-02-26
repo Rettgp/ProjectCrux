@@ -40,4 +40,7 @@ protected:
 	FName PrimarySocketName;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
 	float Reach;
+
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category = "Weapon")
+	void AttackNotify();
 };

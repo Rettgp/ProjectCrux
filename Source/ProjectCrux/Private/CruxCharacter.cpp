@@ -6,6 +6,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/SphereComponent.h"
 #include "Components/CruxHealthComponent.h"
+#include "Components/CruxCharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/PawnMovementComponent.h"
 #include "Net/UnrealNetwork.h"
@@ -17,7 +18,8 @@
 
 
 // Sets default values
-ACruxCharacter::ACruxCharacter()
+ACruxCharacter::ACruxCharacter(const FObjectInitializer& ObjectInitializer) : 
+	ACharacter(ObjectInitializer.SetDefaultSubobjectClass<UCruxCharacterMovementComponent>(ACharacter::CharacterMovementComponentName))
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -77,6 +79,10 @@ void ACruxCharacter::Tick(float DeltaTime)
 	{
 		Targeted(hit_result.GetActor());
 	}
+	else
+	{
+		Targeted(nullptr);
+	}
 }
 
 // Called to bind functionality to input
@@ -99,7 +105,7 @@ void ACruxCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 // ONLY RAN ON SERVER
 void ACruxCharacter::AutoAttackHit(FAutoAttackInfo AttackInfo)
 {
-	if (Role < ROLE_Authority)
+	if (GetLocalRole() < ROLE_Authority)
 	{
 		return;
 	}
@@ -157,7 +163,7 @@ bool ACruxCharacter::ServerTarget_Validate(ACruxCharacter* target)
 
 void ACruxCharacter::BeginAutoAttack()
 {
-	if (Role < ROLE_Authority)
+	if (GetLocalRole() < ROLE_Authority)
 	{
 		ServerBeginAutoAttack();
 	}
