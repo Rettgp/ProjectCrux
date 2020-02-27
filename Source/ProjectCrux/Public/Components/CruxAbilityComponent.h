@@ -32,13 +32,13 @@ protected:
 	bool Casting;
 	
 	UFUNCTION(BlueprintCallable, Category = "AbilityComponent")
-	bool CanCast();
+	bool CanCastAbility();
 	UFUNCTION()
 	void OnRep_CooldownRemaining(float old_cooldown);
 	UFUNCTION(BlueprintCallable, Category = "AbilityComponent")
-	void Cast();
+	void CastAbility();
 	UFUNCTION(Server, Reliable)
-	void ServerCast();
+	void ServerCastAbility();
 
 	int ActionIndex;
 

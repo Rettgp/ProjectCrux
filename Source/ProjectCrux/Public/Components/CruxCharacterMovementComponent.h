@@ -20,16 +20,26 @@ public:
 	virtual class FNetworkPredictionData_Client* GetPredictionData_Client() const override;
 
 	UFUNCTION(BlueprintCallable, Category = "CruxMovement")
-	void SetMoveSpeed(float CustomVelocity);
+	void SetMoveSpeed(float Speed);
 	UFUNCTION(BlueprintCallable, Category = "CruxMovement")
 	void ResetMoveSpeed();
+	UFUNCTION(BlueprintCallable, Category = "CruxMovement")
+	void Dash(FVector Direction);
+
+	UFUNCTION(Unreliable, Server, WithValidation)
+	void ServerSetDashDirection(const FVector& DashDir);
+
+	///@brief Event triggered at the end of a movement update
+	virtual void OnMovementUpdated(float DeltaSeconds, const FVector & OldLocation, const FVector & OldVelocity) override;
 
 	virtual float GetMaxSpeed() const;
 	virtual float GetMaxAcceleration() const;
 	uint8 UseCustomMoveSpeed : 1;
+	uint8 UseDash : 1;
 
 protected:
 	float CurrentMoveSpeed;
+	FVector DashVector;
 };
 
 class FSavedMove_MyMovement : public FSavedMove_Character
@@ -49,7 +59,9 @@ public:
 	///@brief Sets variables on character movement component before making a predictive correction.
 	virtual void PrepMoveFor(class ACharacter* Character) override;
 
+	FVector SavedDashDirection;
 	uint8 SavedUseCustomMoveSpeed : 1;
+	uint8 SavedUseDash : 1;
 };
 
 class FNetworkPredictionData_Client_MyMovement : public FNetworkPredictionData_Client_Character

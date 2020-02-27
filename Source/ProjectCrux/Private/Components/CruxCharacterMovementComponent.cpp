@@ -10,9 +10,9 @@ UCruxCharacterMovementComponent::UCruxCharacterMovementComponent(const FObjectIn
 {
 }
 
-void UCruxCharacterMovementComponent::SetMoveSpeed(float CustomVelocity)
+void UCruxCharacterMovementComponent::SetMoveSpeed(float Speed)
 {
-	CurrentMoveSpeed = CustomVelocity;
+	CurrentMoveSpeed = Speed;
 	UseCustomMoveSpeed = true;
 }
 
@@ -23,6 +23,18 @@ void UCruxCharacterMovementComponent::ResetMoveSpeed()
 	UseCustomMoveSpeed = false;
 }
 
+void UCruxCharacterMovementComponent::Dash(FVector Direction)
+{
+	//Send movement vector to server
+	if (PawnOwner->GetLocalRole() < ROLE_Authority)
+	{
+		ServerSetDashDirection(Direction);
+	}
+
+	DashVector = Direction;
+	UseDash = true;
+}
+
 float UCruxCharacterMovementComponent::GetMaxSpeed() const
 {
 	float MaxSpeed = Super::GetMaxSpeed();
@@ -31,7 +43,6 @@ float UCruxCharacterMovementComponent::GetMaxSpeed() const
 		MaxSpeed = CurrentMoveSpeed;
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("Speed: %f"), MaxSpeed);
 	return MaxSpeed;
 }
 
@@ -66,11 +77,43 @@ class FNetworkPredictionData_Client* UCruxCharacterMovementComponent::GetPredict
 	return ClientPredictionData;
 }
 
+bool UCruxCharacterMovementComponent::ServerSetDashDirection_Validate(const FVector& DashDir)
+{
+	return true;
+}
+
+void UCruxCharacterMovementComponent::ServerSetDashDirection_Implementation(const FVector& DashDir)
+{
+	DashVector = DashDir;
+}
+
+void UCruxCharacterMovementComponent::OnMovementUpdated(float DeltaSeconds, const FVector& OldLocation, const FVector& OldVelocity)
+{
+	Super::OnMovementUpdated(DeltaSeconds, OldLocation, OldVelocity);
+
+	if (!CharacterOwner)
+	{
+		return;
+	}
+
+	//Update dodge movement
+	if (UseDash)
+	{		
+		FVector DodgeVel = DashVector;
+		DodgeVel.Z = 0.0f;
+
+		Launch(DodgeVel);
+
+		UseDash = false;
+	}
+}
+
 void FSavedMove_MyMovement::Clear()
 {
 	Super::Clear();
 
 	SavedUseCustomMoveSpeed = false;
+	SavedDashDirection = FVector::ZeroVector;
 }
 
 uint8 FSavedMove_MyMovement::GetCompressedFlags() const
@@ -79,7 +122,6 @@ uint8 FSavedMove_MyMovement::GetCompressedFlags() const
 
 	if (SavedUseCustomMoveSpeed)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Compressed flags using custom move speed"));
 		Result |= FLAG_Custom_0;
 	}
 
@@ -92,7 +134,10 @@ bool FSavedMove_MyMovement::CanCombineWith(const FSavedMovePtr& NewMove, ACharac
 	//any problem with leaving it out, but it seems that it's good practice to implement this anyways.
 	if (SavedUseCustomMoveSpeed != ((FSavedMove_MyMovement*)&NewMove)->SavedUseCustomMoveSpeed)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("CANNOT COMBINE WITH"));
+		return false;
+	}
+	if (SavedDashDirection != ((FSavedMove_MyMovement*)&NewMove)->SavedDashDirection)
+	{
 		return false;
 	}
 
@@ -107,6 +152,9 @@ void FSavedMove_MyMovement::SetMoveFor(ACharacter* Character, float InDeltaTime,
 	if (CharMov)
 	{
 		SavedUseCustomMoveSpeed = CharMov->UseCustomMoveSpeed;
+
+		//Again, just taking the player movement component's state and storing it for later it in the saved move.
+		SavedDashDirection = CharMov->DashVector;
 	}
 }
 
@@ -117,7 +165,11 @@ void FSavedMove_MyMovement::PrepMoveFor(class ACharacter* Character)
 	UCruxCharacterMovementComponent* CharMov = Cast<UCruxCharacterMovementComponent>(Character->GetCharacterMovement());
 	if (CharMov)
 	{
+		//This is just the exact opposite of SetMoveFor. It copies the state from the saved move to the movement
+		//component before a correction is made to a client.
+		CharMov->DashVector = SavedDashDirection;
 		
+		//Don't update flags here. They're automatically setup before corrections using the compressed flag methods.	
 	}
 }
 

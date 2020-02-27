@@ -16,8 +16,6 @@ class PROJECTCRUX_API UCruxAbilityMovementAction : public UCruxAbilityAction
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AbilityMovementAction")
-	float Distance;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AbilityMovementAction")
 	float Velocity;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AbilityMovementAction", meta=(ClampMin="0.0", ClampMax="1.0"))
 	FVector Direction;

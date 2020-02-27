@@ -5,6 +5,8 @@
 
 #include "Net/UnrealNetwork.h"
 
+#include "CruxCharacter.h"
+
 // Sets default values for this component's properties
 UCruxAbilityComponent::UCruxAbilityComponent()
 {
@@ -27,7 +29,7 @@ void UCruxAbilityComponent::BeginPlay()
 }
 
 
-bool UCruxAbilityComponent::CanCast()
+bool UCruxAbilityComponent::CanCastAbility()
 {
 	return (CooldownRemaining <= 0.0f);
 }
@@ -37,32 +39,40 @@ void UCruxAbilityComponent::OnRep_CooldownRemaining(float old_cooldown)
 	OnCooldownUpdated.Broadcast(this, CooldownRemaining, nullptr);
 }
 
-void UCruxAbilityComponent::Cast()
+void UCruxAbilityComponent::CastAbility()
 {
-	if (!CanCast() && Actions.Num() > 0)
+	if (!CanCastAbility() && Actions.Num() > 0)
 	{
 		return;
 	}
 
 	ActionIndex = 0;
 	UCruxAbilityAction *action = Actions[ActionIndex]->GetDefaultObject<UCruxAbilityAction>();
-	action->Run(GetOwner());
-	Casting = true;
+	ACruxCharacter *character = Cast<ACruxCharacter>(GetOwner());
+	if (character)
+	{
+		action->Run(character);
+		Casting = true;
 
-	ServerCast();
+		ServerCastAbility();
+	}
 }
 
-void UCruxAbilityComponent::ServerCast_Implementation()
+void UCruxAbilityComponent::ServerCastAbility_Implementation()
 {
-	if (!CanCast() && Actions.Num() > 0)
+	if (!CanCastAbility() && Actions.Num() > 0)
 	{
 		return;
 	}
 
 	ActionIndex = 0;
 	UCruxAbilityAction *action = Actions[ActionIndex]->GetDefaultObject<UCruxAbilityAction>();
-	action->Run(GetOwner());
-	Casting = true;
+	ACruxCharacter *character = Cast<ACruxCharacter>(GetOwner());
+	if (character)
+	{
+		action->Run(character);
+		Casting = true;
+	}
 }
 
 // Called every frame
