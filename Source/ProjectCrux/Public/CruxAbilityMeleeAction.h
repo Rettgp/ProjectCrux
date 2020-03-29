@@ -13,6 +13,9 @@ UCLASS( Blueprintable, ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PROJECTCRUX_API UCruxAbilityMeleeAction : public UCruxAbilityAction
 {
 	GENERATED_BODY()
+
+	UFUNCTION(BlueprintCallable, Category = "AbilityMeleeAction")
+	void MultiSphereTraceStrike();
 	
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AbilityMeleeAction")

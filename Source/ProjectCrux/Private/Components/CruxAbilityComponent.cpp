@@ -36,12 +36,12 @@ bool UCruxAbilityComponent::CanCastAbility()
 
 void UCruxAbilityComponent::OnRep_CooldownRemaining(float old_cooldown)
 {
-	OnCooldownUpdated.Broadcast(this, CooldownRemaining, nullptr);
+	OnCooldownUpdated.Broadcast(this, CooldownRemaining, Slot, nullptr);
 }
 
 void UCruxAbilityComponent::CastAbility()
 {
-	if (!CanCastAbility() && Actions.Num() > 0)
+	if (!CanCastAbility() || Actions.Num() <= 0)
 	{
 		return;
 	}
@@ -58,9 +58,13 @@ void UCruxAbilityComponent::CastAbility()
 	}
 }
 
+void UCruxAbilityComponent::CooldownFinished_Implementation()
+{
+}
+
 void UCruxAbilityComponent::ServerCastAbility_Implementation()
 {
-	if (!CanCastAbility() && Actions.Num() > 0)
+	if (!CanCastAbility() || Actions.Num() <= 0)
 	{
 		return;
 	}
@@ -71,6 +75,7 @@ void UCruxAbilityComponent::ServerCastAbility_Implementation()
 	if (character)
 	{
 		action->Run(character);
+		GetWorld()->GetTimerManager().SetTimer(CooldownTimerHandle, this, &UCruxAbilityComponent::CooldownFinished, Cooldown, false);
 		Casting = true;
 	}
 }
@@ -79,6 +84,10 @@ void UCruxAbilityComponent::ServerCastAbility_Implementation()
 void UCruxAbilityComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	CooldownRemaining = GetWorld()->GetTimerManager().GetTimerRemaining(CooldownTimerHandle);
+	UE_LOG(LogTemp, Warning, TEXT("%f"), CooldownRemaining)
+	OnCooldownUpdated.Broadcast(this, CooldownRemaining, Slot, GetOwner()->GetInstigatorController());
 
 	if (Casting)
 	{
@@ -92,6 +101,15 @@ void UCruxAbilityComponent::TickComponent(float DeltaTime, ELevelTick TickType, 
 			{
 				Casting = false;
 				ActionIndex = 0;
+			}
+			else
+			{
+				UCruxAbilityAction *NextAction = Actions[ActionIndex]->GetDefaultObject<UCruxAbilityAction>();
+				ACruxCharacter *character = Cast<ACruxCharacter>(GetOwner());
+				if (character)
+				{
+					NextAction->Run(character);
+				}
 			}
 		}
 	}

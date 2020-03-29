@@ -52,6 +52,21 @@ float UCruxCharacterMovementComponent::GetMaxAcceleration() const
 	return MaxAccel;
 }
 
+void UCruxCharacterMovementComponent::ToggleGroundFriction(bool EnableFriction)
+{
+	if (DefaultGroundFriction == 0.0f)
+	{
+		DefaultGroundFriction = GroundFriction;
+	}
+	if (DefaultWalkBrakingDeceleration == 0.0f)
+	{
+		DefaultWalkBrakingDeceleration = BrakingDecelerationWalking;
+	}
+
+	GroundFriction = EnableFriction ? DefaultGroundFriction : 0.0f;
+	BrakingDecelerationWalking = EnableFriction ? DefaultWalkBrakingDeceleration : 0.0f;
+}
+
 //Set input flags on character from saved inputs
 void UCruxCharacterMovementComponent::UpdateFromCompressedFlags(uint8 Flags)//Client only
 {

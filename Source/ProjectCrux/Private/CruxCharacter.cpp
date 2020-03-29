@@ -7,6 +7,7 @@
 #include "Components/SphereComponent.h"
 #include "Components/CruxHealthComponent.h"
 #include "Components/CruxCharacterMovementComponent.h"
+#include "Components/CruxAbilityComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/PawnMovementComponent.h"
 #include "Net/UnrealNetwork.h"

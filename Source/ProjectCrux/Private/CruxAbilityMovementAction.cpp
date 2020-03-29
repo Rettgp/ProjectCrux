@@ -3,3 +3,18 @@
 
 #include "CruxAbilityMovementAction.h"
 
+#include "Components/CruxCharacterMovementComponent.h"
+
+void UCruxAbilityMovementAction::ToggleGroundFriction(bool EnableFriction)
+{
+	if (ActionOwner)
+	{
+		UCruxCharacterMovementComponent *Movement = 
+			Cast<UCruxCharacterMovementComponent>(ActionOwner->GetCharacterMovement());
+
+		if (Movement)
+		{
+			Movement->ToggleGroundFriction(EnableFriction);
+		}
+	}
+}

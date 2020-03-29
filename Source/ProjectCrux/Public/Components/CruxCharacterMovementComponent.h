@@ -31,15 +31,20 @@ public:
 
 	///@brief Event triggered at the end of a movement update
 	virtual void OnMovementUpdated(float DeltaSeconds, const FVector & OldLocation, const FVector & OldVelocity) override;
+	void ToggleGroundFriction(bool EnableFriction);
 
 	virtual float GetMaxSpeed() const;
 	virtual float GetMaxAcceleration() const;
+
 	uint8 UseCustomMoveSpeed : 1;
 	uint8 UseDash : 1;
 
 protected:
 	float CurrentMoveSpeed;
 	FVector DashVector;
+
+	float DefaultGroundFriction = 0.0f;
+	float DefaultWalkBrakingDeceleration = 0.0f;
 };
 
 class FSavedMove_MyMovement : public FSavedMove_Character

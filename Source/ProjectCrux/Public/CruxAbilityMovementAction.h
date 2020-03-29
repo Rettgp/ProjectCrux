@@ -14,10 +14,12 @@ class PROJECTCRUX_API UCruxAbilityMovementAction : public UCruxAbilityAction
 {
 	GENERATED_BODY()
 
+	UFUNCTION(BlueprintCallable, Category = "AbilityMovementAction")
+	void ToggleGroundFriction(bool EnableFriction);
+
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AbilityMovementAction")
 	float Velocity;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AbilityMovementAction", meta=(ClampMin="0.0", ClampMax="1.0"))
 	FVector Direction;
-	
 };
